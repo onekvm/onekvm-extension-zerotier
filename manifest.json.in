@@ -1,0 +1,72 @@
+{
+  "manifest_version": 1,
+  "id": "zerotier",
+  "i18n": {
+    "default": {"name": "ZeroTier", "description": "Connect OneKVM to a ZeroTier network."},
+    "zh": {"name": "ZeroTier", "description": "将 OneKVM 连接到 ZeroTier 网络。"},
+    "zh-TW": {"name": "ZeroTier", "description": "將 OneKVM 連接到 ZeroTier 網路。"}
+  },
+  "version": "@VERSION@",
+  "api_version": 2,
+  "architecture": "@ARCH@",
+  "kind": "service",
+  "entrypoint": "bin/onekvm-zerotier-controller",
+  "kernel_modules": ["tun"],
+  "permissions": ["network", "network-admin"],
+  "capabilities": [],
+  "services": [{
+    "id": "zerotier_one",
+    "i18n": {
+      "default": {"name": "ZeroTier One", "description": "Private ZeroTier network client."},
+      "zh": {"name": "ZeroTier One", "description": "私有 ZeroTier 网络客户端。"},
+      "zh-TW": {"name": "ZeroTier One", "description": "私有 ZeroTier 網路用戶端。"}
+    }
+  }],
+  "icon": {"source": "custom", "path": "web/logo.svg"},
+  "page": {"title": "ZeroTier", "renderer": "vue", "entrypoint": "web/page.js", "icon": {"source": "custom", "path": "web/logo.svg"}},
+  "controller": {"runtime": "executable", "entrypoint": "bin/onekvm-zerotier-controller", "arguments": ["--controller"], "timeout_seconds": 5},
+  "methods": {"status": {}},
+  "settings_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["networks_json", "moons_json", "port", "allow_managed", "allow_global", "allow_default", "allow_dns"],
+    "properties": {
+      "networks_json": {
+        "type": "string", "title": "Networks", "default": "[]", "maxLength": 1024,
+        "i18n": {"default": "Networks", "zh": "网络", "zh-TW": "網路"}
+      },
+      "network_id": {
+        "type": "string", "title": "Legacy network ID", "maxLength": 16,
+        "i18n": {"default": "Legacy network ID", "zh": "旧版网络 ID", "zh-TW": "舊版網路 ID"}
+      },
+      "moons_json": {
+        "type": "string", "title": "Moon nodes", "default": "[]", "maxLength": 1024,
+        "i18n": {"default": "Moon nodes", "zh": "Moon 节点", "zh-TW": "Moon 節點"}
+      },
+      "port": {
+        "type": "integer", "title": "UDP port", "default": 9993, "minimum": 0, "maximum": 65535,
+        "i18n": {"default": "UDP port", "zh": "UDP 端口", "zh-TW": "UDP 連接埠"}
+      },
+      "allow_managed": {
+        "type": "boolean", "title": "Allow managed addresses and routes", "default": true,
+        "i18n": {"default": "Allow managed addresses and routes", "zh": "允许托管地址和路由", "zh-TW": "允許受管位址和路由"}
+      },
+      "allow_global": {
+        "type": "boolean", "title": "Allow public address ranges", "default": false,
+        "i18n": {"default": "Allow public address ranges", "zh": "允许公共地址范围", "zh-TW": "允許公用位址範圍"}
+      },
+      "allow_default": {
+        "type": "boolean", "title": "Allow default route", "default": false,
+        "i18n": {"default": "Allow default route", "zh": "允许默认路由", "zh-TW": "允許預設路由"}
+      },
+      "allow_dns": {
+        "type": "boolean", "title": "Allow DNS configuration", "default": false,
+        "i18n": {"default": "Allow DNS configuration", "zh": "允许 DNS 配置", "zh-TW": "允許 DNS 設定"}
+      }
+    }
+  },
+  "secret_fields": [],
+  "memory_budget": "12M",
+  "resource_limits": {"memory_max": "32M", "cpu_quota": "50%", "tasks_max": 64, "limit_nofile": 1024},
+  "healthcheck": {"type": "exec", "command": ["bin/onekvm-zerotier-controller", "--health"], "timeout_seconds": 5}
+}
