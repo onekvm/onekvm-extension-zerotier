@@ -1,9 +1,9 @@
 SUMMARY = "OneKVM ZeroTier service extension"
 HOMEPAGE = "https://www.zerotier.com/"
-LICENSE = "MIT & MPL-2.0"
+LICENSE = "GPL-3.0-only & MPL-2.0"
 ONEKVM_ZEROTIER_SOURCE ?= "${UNPACKDIR}/zerotier-one"
 LIC_FILES_CHKSUM = "\
-    file://LICENSE;md5=4b4d2ea45bb882ef18ae0022ccc1f9ab \
+    file://LICENSE;md5=1ebbd3e34237af26da5dc08a4e440464 \
     file://${ONEKVM_ZEROTIER_SOURCE}/LICENSE-MPL.txt;md5=9741c346eef56131163e13b9db1241b3 \
 "
 PR = "r2"
