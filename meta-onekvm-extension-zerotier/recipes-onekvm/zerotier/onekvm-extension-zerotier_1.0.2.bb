@@ -28,17 +28,19 @@ ONEKVM_EXTENSION_ID = "zerotier"
 ONEKVM_EXTENSION_API_VERSION = "2"
 ONEKVM_EXTENSION_MANIFEST_TEMPLATE = "${S}/manifest.json.in"
 
-PACKAGES = "${PN}-dbg ${PN}-runtime ${PN}"
+PACKAGES = "${PN}-dbg zerotier-one ${PN}"
 FILES:${PN} = "\
     ${ONEKVM_EXTENSION_ROOT}/bin/onekvm-zerotier-controller \
     ${ONEKVM_EXTENSION_ROOT}/manifest.json \
     ${ONEKVM_EXTENSION_ROOT}/web \
 "
-FILES:${PN}-runtime = "\
+FILES:zerotier-one = "\
     ${ONEKVM_EXTENSION_ROOT}/bin/zerotier-one \
     ${ONEKVM_EXTENSION_ROOT}/bin/zerotier-cli \
 "
-RDEPENDS:${PN} += "${PN}-runtime (= ${EXTENDPKGV})"
+RDEPENDS:${PN} += "zerotier-one"
+RREPLACES:zerotier-one += "${PN}-runtime (<= 1.0.2-r1)"
+RCONFLICTS:zerotier-one += "${PN}-runtime (<= 1.0.2-r1)"
 RDEPENDS:${PN}:append:onekvm-nanokvm = " onekvm-kernel-module-tun"
 INSANE_SKIP:${PN}-dbg += "buildpaths"
 
