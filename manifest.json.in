@@ -24,8 +24,9 @@
   }],
   "icon": {"source": "custom", "path": "web/logo.svg"},
   "page": {"title": "ZeroTier", "renderer": "vue", "entrypoint": "web/page.js", "icon": {"source": "custom", "path": "web/logo.svg"}},
-  "controller": {"runtime": "executable", "entrypoint": "bin/onekvm-zerotier-controller", "arguments": ["--controller"], "timeout_seconds": 5},
-  "methods": {"status": {}},
+  "methods": [
+    {"name": "status", "command": ["bin/onekvm-zerotier-controller", "status"]}
+  ],
   "settings_schema": {
     "type": "object",
     "additionalProperties": false,

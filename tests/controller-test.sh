@@ -7,21 +7,14 @@ trap 'rm -rf "$test_root"' EXIT HUP INT TERM
 mkdir -p "$test_root/config" "$test_root/data" "$test_root/sockets"
 printf '%s\n' '{"network_id":"","moons_json":"[]","port":9993,"allow_managed":true,"allow_global":false,"allow_default":false,"allow_dns":false}' >"$test_root/config/config.json"
 
-run_controller() {
+ONEKVM_EXTENSION_CONFIG="$test_root/config" "$binary" --health
+
+status_offline=$(
     ONEKVM_EXTENSION_CONFIG="$test_root/config" \
     ONEKVM_EXTENSION_DATA="$test_root/data" \
-    ONEKVM_EXTENSION_SOCKET="$test_root/sockets" \
-        "$binary" --controller
-}
-
-enable_output=$(printf '%s' '{"event":"enable","extension_id":"zerotier","enabled":true}' | run_controller)
-printf '%s' "$enable_output" | grep -q '"type":"ensure"'
-printf '%s' "$enable_output" | grep -q '"type":"exec"'
-
-disable_output=$(printf '%s' '{"event":"disable","extension_id":"zerotier","enabled":false}' | run_controller)
-printf '%s' "$disable_output" | grep -q '"type":"remove_all"'
-
-ONEKVM_EXTENSION_CONFIG="$test_root/config" "$binary" --health
+        "$binary" status
+)
+printf '%s' "$status_offline" | grep -q '"online"'
 
 # Removing a configured network must leave it in ZeroTier and delete it from
 # the controller's managed list.  Copy the controller so its sibling CLI can
@@ -71,10 +64,11 @@ case " $* " in
 esac
 EOF
 chmod +x "$test_root/bin/zerotier-cli"
-status_output=$(printf '%s' '{"event":"invoke","extension_id":"zerotier","enabled":true,"method":"status"}' | \
+status_output=$(
     ONEKVM_EXTENSION_CONFIG="$test_root/config" \
     ONEKVM_EXTENSION_DATA="$test_root/data" \
-    "$test_root/bin/onekvm-zerotier-controller" --controller)
+    "$test_root/bin/onekvm-zerotier-controller" status
+)
 printf '%s' "$status_output" | grep -q '"nodeId":"a09acf0235"'
 printf '%s' "$status_output" | grep -q '"assignedAddresses":'
 printf '%s' "$status_output" | grep -q '10.10.10.1'

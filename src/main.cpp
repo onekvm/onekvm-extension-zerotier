@@ -1,5 +1,6 @@
 #include <json-c/json.h>
 
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -22,7 +23,6 @@
 
 namespace {
 
-constexpr std::string_view kExtensionID = "zerotier";
 constexpr std::size_t kMaxNetworks = 32;
 constexpr std::size_t kMaxMoons = 32;
 
@@ -369,12 +369,10 @@ bool WaitForControlAPI(const std::string &home, std::string &error) {
   return false;
 }
 
-void PrintPlan(json_object *response) {
-  json_object *plan = json_object_new_object();
-  json_object_object_add(plan, "actions", json_object_new_array());
-  json_object_object_add(plan, "response", response);
-  std::cout << json_object_to_json_string_ext(plan, JSON_C_TO_STRING_PLAIN);
-  json_object_put(plan);
+void PrintJSON(json_object *response) {
+  std::cout << json_object_to_json_string_ext(response, JSON_C_TO_STRING_PLAIN)
+            << '\n';
+  json_object_put(response);
 }
 
 void PrintStatus() {
@@ -432,7 +430,7 @@ void PrintStatus() {
                          json_object_new_string(node_id.c_str()));
   json_object_object_add(response, "networks", networks);
   json_object_object_add(response, "moons", moons);
-  PrintPlan(response);
+  PrintJSON(response);
 }
 
 std::set<std::string> ReadManagedIDs(const std::string &path,
@@ -480,61 +478,50 @@ bool WriteManagedIDs(const std::string &path,
   return true;
 }
 
-bool Controller(std::string &error) {
-  std::string input((std::istreambuf_iterator<char>(std::cin)),
-                    std::istreambuf_iterator<char>());
-  json_object *root = ParseJSON(input, error);
-  if (root == nullptr || !json_object_is_type(root, json_type_object)) {
-    if (root != nullptr)
-      json_object_put(root);
-    return false;
+int RunDaemon(std::string &error);
+int Apply(std::string &error);
+
+int WaitPid(pid_t pid) {
+  int status = 0;
+  while (waitpid(pid, &status, 0) < 0) {
+    if (errno != EINTR)
+      return -1;
   }
-  json_object *event_value = nullptr;
-  json_object *id_value = nullptr;
-  json_object *enabled_value = nullptr;
-  const bool valid =
-      json_object_object_get_ex(root, "event", &event_value) &&
-      json_object_is_type(event_value, json_type_string) &&
-      json_object_object_get_ex(root, "extension_id", &id_value) &&
-      json_object_is_type(id_value, json_type_string) &&
-      json_object_object_get_ex(root, "enabled", &enabled_value) &&
-      json_object_is_type(enabled_value, json_type_boolean);
-  if (!valid || std::string_view(json_object_get_string(id_value)) !=
-                    kExtensionID) {
-    json_object_put(root);
-    error = "unsupported controller event";
-    return false;
+  return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+}
+
+pid_t Spawn(int (*fn)(std::string &), std::string &error) {
+  const pid_t pid = fork();
+  if (pid < 0) {
+    error = std::string("fork: ") + std::strerror(errno);
+    return -1;
   }
-  const std::string event = json_object_get_string(event_value);
-  const bool enabled = json_object_get_boolean(enabled_value) != 0;
-  if (event == "invoke") {
-    json_object *method_value = nullptr;
-    const bool status_method =
-        json_object_object_get_ex(root, "method", &method_value) &&
-        json_object_is_type(method_value, json_type_string) &&
-        std::string_view(json_object_get_string(method_value)) == "status";
-    json_object_put(root);
-    if (!status_method) {
-      error = "unknown public method";
-      return false;
+  if (pid == 0) {
+    std::string child_error;
+    const int result = fn(child_error);
+    if (result != 0 && !child_error.empty())
+      std::cerr << "onekvm-zerotier-controller: " << child_error << '\n';
+    std::_Exit(result == 0 ? 0 : 1);
+  }
+  return pid;
+}
+
+int Service(std::string &error) {
+  const pid_t daemon = Spawn(RunDaemon, error);
+  if (daemon < 0)
+    return 1;
+  const pid_t apply = Spawn(Apply, error);
+  if (apply > 0)
+    WaitPid(apply);
+  int status = 0;
+  while (waitpid(daemon, &status, 0) < 0) {
+    if (errno != EINTR) {
+      error = "wait: " + std::string(std::strerror(errno));
+      return 1;
     }
-    PrintStatus();
-    return true;
   }
-  json_object_put(root);
-  if (event != "enable" && event != "disable" && event != "reconcile" &&
-      event != "config_changed") {
-    error = "unsupported controller lifecycle event " + event;
-    return false;
-  }
-  if (!enabled || event == "disable") {
-    std::cout << R"({"actions":[{"type":"remove_all"}]})";
-  } else if (event == "config_changed") {
-    std::cout << R"({"actions":[{"type":"remove_all"},{"type":"ensure","name":"zerotier_one","command":["bin/onekvm-zerotier-controller","--run"],"restart":"on-failure"},{"type":"exec","name":"apply","command":["bin/onekvm-zerotier-controller","--apply"],"timeout_seconds":30}]})";
-  } else {
-    std::cout << R"({"actions":[{"type":"ensure","name":"zerotier_one","command":["bin/onekvm-zerotier-controller","--run"],"restart":"on-failure"},{"type":"exec","name":"apply","command":["bin/onekvm-zerotier-controller","--apply"],"timeout_seconds":30}]})";
-  }
-  return true;
+  error = "zerotier-one exited";
+  return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
 }
 
 int RunDaemon(std::string &error) {
@@ -632,18 +619,25 @@ int Apply(std::string &error) {
 int main(int argc, char **argv) {
   std::string error;
   int result = 1;
-  if (argc == 2 && std::string_view(argv[1]) == "--controller") {
-    result = Controller(error) ? 0 : 1;
-  } else if (argc == 2 && std::string_view(argv[1]) == "--health") {
+  const std::string_view command = argc >= 2 ? argv[1] : "--service";
+  if (argc > 2) {
+    error = "usage: onekvm-zerotier-controller "
+            "[--service|status|--health|--run|--apply]";
+  } else if (command == "--service") {
+    result = Service(error);
+  } else if (command == "status") {
+    PrintStatus();
+    result = 0;
+  } else if (command == "--health") {
     Settings settings;
     result = LoadSettings(true, settings, error) ? 0 : 1;
-  } else if (argc == 2 && std::string_view(argv[1]) == "--run") {
+  } else if (command == "--run") {
     result = RunDaemon(error);
-  } else if (argc == 2 && std::string_view(argv[1]) == "--apply") {
+  } else if (command == "--apply") {
     result = Apply(error);
   } else {
     error = "usage: onekvm-zerotier-controller "
-            "[--controller|--health|--run|--apply]";
+            "[--service|status|--health|--run|--apply]";
   }
   if (result != 0)
     std::cerr << "onekvm-zerotier-controller: " << error << '\n';
