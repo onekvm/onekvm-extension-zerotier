@@ -1,6 +1,7 @@
 CONTROLLER_BINARY ?= build/onekvm-zerotier-controller
 RUNTIME_BINARY ?= build/zerotier-one
 PREFIX ?= /usr/local
+BINDIR ?= $(PREFIX)/bin
 DESTDIR ?=
 VERSION ?= 0.0.0-dev
 ARCH ?= unknown
@@ -13,8 +14,8 @@ install:
 	test -x $(CONTROLLER_BINARY)
 	test -x $(RUNTIME_BINARY)
 	install -Dm0755 $(CONTROLLER_BINARY) $(DESTDIR)$(PREFIX)/bin/onekvm-zerotier-controller
-	install -Dm0755 $(RUNTIME_BINARY) $(DESTDIR)$(PREFIX)/bin/zerotier-one
-	ln -s zerotier-one $(DESTDIR)$(PREFIX)/bin/zerotier-cli
+	install -Dm0755 $(RUNTIME_BINARY) $(DESTDIR)$(BINDIR)/zerotier-one
+	ln -s zerotier-one $(DESTDIR)$(BINDIR)/zerotier-cli
 	install -Dm0644 web/page.js $(DESTDIR)$(PREFIX)/web/page.js
 	install -Dm0644 web/logo.svg $(DESTDIR)$(PREFIX)/web/logo.svg
 	install -d $(DESTDIR)$(PREFIX)

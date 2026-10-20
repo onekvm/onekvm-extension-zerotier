@@ -16,11 +16,16 @@ status_offline=$(
 )
 printf '%s' "$status_offline" | grep -q '"online"'
 
-# Removing a configured network must leave it in ZeroTier and delete it from
-# the controller's managed list.  Copy the controller so its sibling CLI can
-# be replaced by a deterministic test double.
+# The program package owns /usr/bin/zerotier-cli; tests override that path.
 mkdir -p "$test_root/bin" "$test_root/data/zerotier-one"
 cp "$binary" "$test_root/bin/onekvm-zerotier-controller"
+run_copied() {
+    ONEKVM_EXTENSION_CONFIG="$test_root/config" \
+    ONEKVM_EXTENSION_DATA="$test_root/data" \
+    ONEKVM_ZEROTIER_CLI="$test_root/bin/zerotier-cli" \
+    ONEKVM_ZEROTIER_ONE="$test_root/bin/zerotier-one" \
+        "$test_root/bin/onekvm-zerotier-controller" "$@"
+}
 cat >"$test_root/bin/zerotier-cli" <<'EOF'
 #!/bin/sh
 printf '%s\n' "$*" >>"$ONEKVM_EXTENSION_DATA/cli.log"
@@ -43,9 +48,7 @@ touch "$test_root/data/zerotier-one/authtoken.secret"
 printf '%s\n' '{"networks_json":"[\"8056c2e21c000001\"]","moons_json":"[\"a09acf0235\"]","port":9993,"allow_managed":true,"allow_global":false,"allow_default":false,"allow_dns":false}' >"$test_root/config/config.json"
 printf '%s\n' '8056c2e21c000001' '8056c2e21c000002' >"$test_root/data/managed-network"
 printf '%s\n' 'a09acf0235' 'deadbeef00' >"$test_root/data/managed-moon"
-ONEKVM_EXTENSION_CONFIG="$test_root/config" \
-ONEKVM_EXTENSION_DATA="$test_root/data" \
-    "$test_root/bin/onekvm-zerotier-controller" --apply
+run_copied --apply
 test "$(cat "$test_root/data/ready-attempts")" = 3
 grep -q 'leave 8056c2e21c000002' "$test_root/data/cli.log"
 grep -q 'deorbit deadbeef00' "$test_root/data/cli.log"
@@ -64,11 +67,7 @@ case " $* " in
 esac
 EOF
 chmod +x "$test_root/bin/zerotier-cli"
-status_output=$(
-    ONEKVM_EXTENSION_CONFIG="$test_root/config" \
-    ONEKVM_EXTENSION_DATA="$test_root/data" \
-    "$test_root/bin/onekvm-zerotier-controller" status
-)
+status_output=$(run_copied status)
 printf '%s' "$status_output" | grep -q '"nodeId":"a09acf0235"'
 printf '%s' "$status_output" | grep -q '"assignedAddresses":'
 printf '%s' "$status_output" | grep -q '10.10.10.1'
@@ -86,9 +85,7 @@ esac
 EOF
 chmod +x "$test_root/bin/zerotier-cli"
 printf '%s\n' '8056c2e21c000001' '8056c2e21c000002' >"$test_root/data/managed-network"
-if ONEKVM_EXTENSION_CONFIG="$test_root/config" \
-    ONEKVM_EXTENSION_DATA="$test_root/data" \
-    "$test_root/bin/onekvm-zerotier-controller" --apply; then
+if run_copied --apply; then
     echo 'failed ZeroTier leave unexpectedly succeeded' >&2
     exit 1
 fi
@@ -107,9 +104,7 @@ EOF
 chmod +x "$test_root/bin/zerotier-cli"
 printf '%s\n' '{"networks_json":"[\"8056c2e21c000003\"]","port":9993,"allow_managed":true,"allow_global":false,"allow_default":false,"allow_dns":false}' >"$test_root/config/config.json"
 : >"$test_root/data/managed-network"
-if ONEKVM_EXTENSION_CONFIG="$test_root/config" \
-    ONEKVM_EXTENSION_DATA="$test_root/data" \
-    "$test_root/bin/onekvm-zerotier-controller" --apply \
+if run_copied --apply \
     2>"$test_root/apply-error"; then
     echo 'failed ZeroTier join unexpectedly succeeded' >&2
     exit 1
@@ -129,9 +124,7 @@ chmod +x "$test_root/bin/zerotier-cli"
 printf '%s\n' '{"networks_json":"[]","moons_json":"[]","port":9993,"allow_managed":true,"allow_global":false,"allow_default":false,"allow_dns":false}' >"$test_root/config/config.json"
 : >"$test_root/data/managed-network"
 printf '%s\n' 'a09acf0235' >"$test_root/data/managed-moon"
-if ONEKVM_EXTENSION_CONFIG="$test_root/config" \
-    ONEKVM_EXTENSION_DATA="$test_root/data" \
-    "$test_root/bin/onekvm-zerotier-controller" --apply \
+if run_copied --apply \
     2>"$test_root/moon-error"; then
     echo 'failed ZeroTier deorbit unexpectedly succeeded' >&2
     exit 1

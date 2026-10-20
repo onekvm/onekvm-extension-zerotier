@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "\
     file://LICENSE;md5=1ebbd3e34237af26da5dc08a4e440464 \
     file://${ONEKVM_ZEROTIER_SOURCE}/LICENSE-MPL.txt;md5=9741c346eef56131163e13b9db1241b3 \
 "
-PR = "r3"
+PR = "r5"
 
 ZEROTIER_VERSION = "1.16.2"
 ONEKVM_COMPONENT_GIT_URI ??= "git://github.com/onekvm/onekvm-extension-zerotier.git;protocol=https;branch=main"
@@ -35,13 +35,12 @@ FILES:${PN} = "\
     ${ONEKVM_EXTENSION_ROOT}/web \
 "
 FILES:zerotier-one = "\
-    ${ONEKVM_EXTENSION_ROOT}/bin/zerotier-one \
-    ${ONEKVM_EXTENSION_ROOT}/bin/zerotier-cli \
+    ${bindir}/zerotier-one \
+    ${bindir}/zerotier-cli \
 "
-RDEPENDS:${PN} += "zerotier-one"
+RDEPENDS:${PN} += "zerotier-one onekvm-kernel-module-tun"
 RREPLACES:zerotier-one += "${PN}-runtime (<= 1.0.2-r1)"
 RCONFLICTS:zerotier-one += "${PN}-runtime (<= 1.0.2-r1)"
-RDEPENDS:${PN}:append:onekvm-nanokvm = " onekvm-kernel-module-tun"
 INSANE_SKIP:${PN}-dbg += "buildpaths"
 
 do_compile() {
@@ -50,7 +49,8 @@ do_compile() {
         ${S}/src/main.cpp ${STAGING_LIBDIR}/libjson-c.a -lm ${LDFLAGS} \
         -o ${B}/bin/onekvm-zerotier-controller
 
-    oe_runmake -C ${ONEKVM_ZEROTIER_SOURCE} one \
+    # Network membership is managed by the controller; desktop OIDC is unused.
+    oe_runmake -C ${ONEKVM_ZEROTIER_SOURCE} one ZT_SSO_SUPPORTED=0 \
         CC="${CC}" CXX="${CXX}" AR="${AR}" \
         CFLAGS="${CFLAGS}" CXXFLAGS="${CXXFLAGS}" LDFLAGS="${LDFLAGS}" \
         DEFS="-DZT_ONE_NO_ROOT_CHECK"
@@ -61,6 +61,6 @@ do_install() {
     oe_runmake -C ${S} install \
         CONTROLLER_BINARY=${B}/bin/onekvm-zerotier-controller \
         RUNTIME_BINARY=${ONEKVM_ZEROTIER_SOURCE}/zerotier-one \
-        DESTDIR=${D} PREFIX=${ONEKVM_EXTENSION_ROOT} \
+        DESTDIR=${D} PREFIX=${ONEKVM_EXTENSION_ROOT} BINDIR=${bindir} \
         VERSION=${PV} ARCH=${TARGET_ARCH}
 }
