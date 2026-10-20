@@ -26,8 +26,8 @@ The package name is `onekvm-extension-zerotier`. Install it through your
 OneKVM distribution package or image, then manage it with the plugin manager:
 
 ```sh
-onekvm-plugin-manager enable zerotier
-onekvm-plugin-manager disable zerotier
+onekvm-extension enable zerotier
+onekvm-extension disable zerotier
 ```
 
 The extension requires the `tun` kernel module.

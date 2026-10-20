@@ -24,8 +24,8 @@ OpenEmbedded 随扩展打包。
 或镜像安装，然后使用插件管理器控制扩展：
 
 ```sh
-onekvm-plugin-manager enable zerotier
-onekvm-plugin-manager disable zerotier
+onekvm-extension enable zerotier
+onekvm-extension disable zerotier
 ```
 
 扩展需要 `tun` 内核模块。
