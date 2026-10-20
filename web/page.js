@@ -1,13 +1,13 @@
 (() => {
   const runtime = window.OneKVMPluginUI.v1
-  const { computed, defineComponent, h, onBeforeUnmount, onMounted, ref } = runtime.vue
-  const { NAlert, NButton, NInput, NInputNumber, NSpin, NSwitch, NTag, useDialog, useMessage } = runtime.naive
+  const { computed, defineComponent, h, onBeforeUnmount, onMounted, ref, shallowRef } = runtime.vue
+  const { NAlert, NButton, NInput, NInputNumber, NSpin, NSwitch, NTabPane, NTabs, NTag, useDialog, useMessage } = runtime.naive
   const idPattern = /^[0-9a-f]{16}$/
   const moonIDPattern = /^[0-9a-f]{10}$/
   const labels = runtime.i18n.createMessages({
-    'zh-TW': Object.assign({ title: 'ZeroTier 網路', description: '加入多個 ZeroTier 網路，查看各網路分配的 IP，或單獨離開並刪除條目。', nodeId: '目前節點 ID', addTitle: '加入網路', networkId: '網路 ID', placeholder: '16 位十六進位網路 ID', add: '加入', leave: '離開並刪除', leaveTitle: '離開此網路？', leaveConfirm: '確定要離開並刪除「{network}」嗎？', cancel: '取消', empty: '尚未加入任何網路。', invalid: '請輸入 16 位十六進位網路 ID。', duplicate: '此網路已在清單中。', assigned: '已分配 IP', pending: '等待網路授權或 IP 分配', offline: 'ZeroTier 服務尚未就緒', options: '網路選項', port: 'UDP 連接埠', managed: '允許受管位址與路由', global: '允許公用位址範圍', defaultRoute: '允許預設路由', dns: '允許 DNS 設定', save: '儲存選項', joined: '已加入網路。', left: '已離開網路並刪除條目。', saved: '網路選項已儲存。', refresh: '重新整理' }, { moonTitle: 'Moon 節點', moonDescription: '加入自建 Moon；Moon ID 同時用作 Seed ID。', moonId: 'Moon ID', moonPlaceholder: '10 位十六進位 Moon ID', moonAdd: '加入 Moon', moonEmpty: '尚未加入任何 Moon。', moonInvalid: '請輸入 10 位十六進位 Moon ID。', moonDuplicate: '此 Moon 已在清單中。', moonRemove: '移除 Moon', moonRemoveTitle: '移除此 Moon？', moonRemoveConfirm: '確定要停止環繞並移除 Moon「{moon}」嗎？', moonAdded: 'Moon 已加入。', moonRemoved: 'Moon 已移除。', moonSeed: 'Seed ID', moonEndpoints: '穩定端點', moonWaiting: '等待 Moon 資料', moonReady: '已連線' }),
-    zh: Object.assign({ title: 'ZeroTier 网络', description: '加入多个 ZeroTier 网络，查看各网络分配的 IP，或单独离开并删除条目。', nodeId: '当前节点 ID', addTitle: '加入网络', networkId: '网络 ID', placeholder: '16 位十六进制网络 ID', add: '加入', leave: '离开并删除', leaveTitle: '离开此网络？', leaveConfirm: '确定要离开并删除“{network}”吗？', cancel: '取消', empty: '尚未加入任何网络。', invalid: '请输入 16 位十六进制网络 ID。', duplicate: '此网络已在列表中。', assigned: '已分配 IP', pending: '等待网络授权或 IP 分配', offline: 'ZeroTier 服务尚未就绪', options: '网络选项', port: 'UDP 端口', managed: '允许托管地址与路由', global: '允许公共地址范围', defaultRoute: '允许默认路由', dns: '允许 DNS 配置', save: '保存选项', joined: '已加入网络。', left: '已离开网络并删除条目。', saved: '网络选项已保存。', refresh: '刷新' }, { moonTitle: 'Moon 节点', moonDescription: '添加自建 Moon；Moon ID 同时用作 Seed ID。', moonId: 'Moon ID', moonPlaceholder: '10 位十六进制 Moon ID', moonAdd: '添加 Moon', moonEmpty: '尚未添加任何 Moon。', moonInvalid: '请输入 10 位十六进制 Moon ID。', moonDuplicate: '此 Moon 已在列表中。', moonRemove: '移除 Moon', moonRemoveTitle: '移除此 Moon？', moonRemoveConfirm: '确定要停止环绕并移除 Moon“{moon}”吗？', moonAdded: 'Moon 已添加。', moonRemoved: 'Moon 已移除。', moonSeed: 'Seed ID', moonEndpoints: '稳定端点', moonWaiting: '等待 Moon 数据', moonReady: '已连接' }),
-    en: Object.assign({ title: 'ZeroTier networks', description: 'Join multiple ZeroTier networks, view the IPs assigned by each network, or leave and remove one network at a time.', nodeId: 'Current node ID', addTitle: 'Join a network', networkId: 'Network ID', placeholder: '16-digit hexadecimal network ID', add: 'Join', leave: 'Leave and remove', leaveTitle: 'Leave this network?', leaveConfirm: 'Leave and remove “{network}”?', cancel: 'Cancel', empty: 'No ZeroTier networks have been added.', invalid: 'Enter a 16-digit hexadecimal network ID.', duplicate: 'This network is already in the list.', assigned: 'Assigned IPs', pending: 'Waiting for network authorization or an assigned IP', offline: 'The ZeroTier service is not ready', options: 'Network options', port: 'UDP port', managed: 'Allow managed addresses and routes', global: 'Allow public address ranges', defaultRoute: 'Allow default route', dns: 'Allow DNS configuration', save: 'Save options', joined: 'Network joined.', left: 'Network left and entry removed.', saved: 'Network options saved.', refresh: 'Refresh' }, { moonTitle: 'Moon nodes', moonDescription: 'Add a self-hosted Moon; its Moon ID is also used as the seed ID.', moonId: 'Moon ID', moonPlaceholder: '10-digit hexadecimal Moon ID', moonAdd: 'Add Moon', moonEmpty: 'No Moon nodes have been added.', moonInvalid: 'Enter a 10-digit hexadecimal Moon ID.', moonDuplicate: 'This Moon is already in the list.', moonRemove: 'Remove Moon', moonRemoveTitle: 'Remove this Moon?', moonRemoveConfirm: 'Stop orbiting and remove Moon “{moon}”?', moonAdded: 'Moon added.', moonRemoved: 'Moon removed.', moonSeed: 'Seed ID', moonEndpoints: 'Stable endpoints', moonWaiting: 'Waiting for Moon data', moonReady: 'Connected' }),
+    'zh-TW': Object.assign({ title: 'ZeroTier 網路', advanced: '進階選項', description: '加入多個 ZeroTier 網路，查看各網路分配的 IP，或單獨離開並刪除條目。', nodeId: '目前節點 ID', addTitle: '加入網路', networkId: '網路 ID', placeholder: '16 位十六進位網路 ID', add: '加入', leave: '離開並刪除', leaveTitle: '離開此網路？', leaveConfirm: '確定要離開並刪除「{network}」嗎？', cancel: '取消', empty: '尚未加入任何網路。', invalid: '請輸入 16 位十六進位網路 ID。', duplicate: '此網路已在清單中。', assigned: '已分配 IP', pending: '等待網路授權或 IP 分配', offline: 'ZeroTier 服務尚未就緒', options: '網路選項', port: 'UDP 連接埠', managed: '允許受管位址與路由', global: '允許公用位址範圍', defaultRoute: '允許預設路由', dns: '允許 DNS 設定', save: '儲存選項', joined: '已加入網路。', left: '已離開網路並刪除條目。', saved: '網路選項已儲存。', refresh: '重新整理' }, { moonTitle: 'Moon 節點', moonDescription: '加入自建 Moon；Moon ID 同時用作 Seed ID。', moonId: 'Moon ID', moonPlaceholder: '10 位十六進位 Moon ID', moonAdd: '加入 Moon', moonEmpty: '尚未加入任何 Moon。', moonInvalid: '請輸入 10 位十六進位 Moon ID。', moonDuplicate: '此 Moon 已在清單中。', moonRemove: '移除 Moon', moonRemoveTitle: '移除此 Moon？', moonRemoveConfirm: '確定要停止環繞並移除 Moon「{moon}」嗎？', moonAdded: 'Moon 已加入。', moonRemoved: 'Moon 已移除。', moonSeed: 'Seed ID', moonEndpoints: '穩定端點', moonWaiting: '等待 Moon 資料', moonReady: '已連線' }),
+    zh: Object.assign({ title: 'ZeroTier 网络', advanced: '高级选项', description: '加入多个 ZeroTier 网络，查看各网络分配的 IP，或单独离开并删除条目。', nodeId: '当前节点 ID', addTitle: '加入网络', networkId: '网络 ID', placeholder: '16 位十六进制网络 ID', add: '加入', leave: '离开并删除', leaveTitle: '离开此网络？', leaveConfirm: '确定要离开并删除“{network}”吗？', cancel: '取消', empty: '尚未加入任何网络。', invalid: '请输入 16 位十六进制网络 ID。', duplicate: '此网络已在列表中。', assigned: '已分配 IP', pending: '等待网络授权或 IP 分配', offline: 'ZeroTier 服务尚未就绪', options: '网络选项', port: 'UDP 端口', managed: '允许托管地址与路由', global: '允许公共地址范围', defaultRoute: '允许默认路由', dns: '允许 DNS 配置', save: '保存选项', joined: '已加入网络。', left: '已离开网络并删除条目。', saved: '网络选项已保存。', refresh: '刷新' }, { moonTitle: 'Moon 节点', moonDescription: '添加自建 Moon；Moon ID 同时用作 Seed ID。', moonId: 'Moon ID', moonPlaceholder: '10 位十六进制 Moon ID', moonAdd: '添加 Moon', moonEmpty: '尚未添加任何 Moon。', moonInvalid: '请输入 10 位十六进制 Moon ID。', moonDuplicate: '此 Moon 已在列表中。', moonRemove: '移除 Moon', moonRemoveTitle: '移除此 Moon？', moonRemoveConfirm: '确定要停止环绕并移除 Moon“{moon}”吗？', moonAdded: 'Moon 已添加。', moonRemoved: 'Moon 已移除。', moonSeed: 'Seed ID', moonEndpoints: '稳定端点', moonWaiting: '等待 Moon 数据', moonReady: '已连接' }),
+    en: Object.assign({ title: 'ZeroTier networks', advanced: 'Advanced options', description: 'Join multiple ZeroTier networks, view the IPs assigned by each network, or leave and remove one network at a time.', nodeId: 'Current node ID', addTitle: 'Join a network', networkId: 'Network ID', placeholder: '16-digit hexadecimal network ID', add: 'Join', leave: 'Leave and remove', leaveTitle: 'Leave this network?', leaveConfirm: 'Leave and remove “{network}”?', cancel: 'Cancel', empty: 'No ZeroTier networks have been added.', invalid: 'Enter a 16-digit hexadecimal network ID.', duplicate: 'This network is already in the list.', assigned: 'Assigned IPs', pending: 'Waiting for network authorization or an assigned IP', offline: 'The ZeroTier service is not ready', options: 'Network options', port: 'UDP port', managed: 'Allow managed addresses and routes', global: 'Allow public address ranges', defaultRoute: 'Allow default route', dns: 'Allow DNS configuration', save: 'Save options', joined: 'Network joined.', left: 'Network left and entry removed.', saved: 'Network options saved.', refresh: 'Refresh' }, { moonTitle: 'Moon nodes', moonDescription: 'Add a self-hosted Moon; its Moon ID is also used as the seed ID.', moonId: 'Moon ID', moonPlaceholder: '10-digit hexadecimal Moon ID', moonAdd: 'Add Moon', moonEmpty: 'No Moon nodes have been added.', moonInvalid: 'Enter a 10-digit hexadecimal Moon ID.', moonDuplicate: 'This Moon is already in the list.', moonRemove: 'Remove Moon', moonRemoveTitle: 'Remove this Moon?', moonRemoveConfirm: 'Stop orbiting and remove Moon “{moon}”?', moonAdded: 'Moon added.', moonRemoved: 'Moon removed.', moonSeed: 'Seed ID', moonEndpoints: 'Stable endpoints', moonWaiting: 'Waiting for Moon data', moonReady: 'Connected' }),
   })
 
   function normalizeID(value) {
@@ -57,6 +57,7 @@
       const savedOptions = ref(JSON.stringify([port.value, allowManaged.value, allowGlobal.value, allowDefault.value, allowDNS.value]))
       const newID = ref('')
       const newMoonID = ref('')
+      const advancedTab = shallowRef('moons')
       const status = ref({ online: false, nodeId: '', networks: [], moons: [] })
       const busy = ref('')
       const loading = ref(false)
@@ -169,22 +170,41 @@
       }
 
       async function leave(id) {
-        if (busy.value) return
+        if (busy.value) return false
         busy.value = id
         try {
-          await saveNetworkMutation(networks.value.filter((candidate) => candidate !== id), labels.left)
+          return await saveNetworkMutation(networks.value.filter((candidate) => candidate !== id), labels.left)
         } finally {
           busy.value = ''
         }
       }
 
       function confirmLeave(id, name) {
-        dialog.warning({
+        const confirmation = dialog.warning({
           title: labels.leaveTitle,
           content: labels.leaveConfirm.replace('{network}', name || id),
           positiveText: labels.leave,
           negativeText: labels.cancel,
-          onPositiveClick: () => leave(id),
+          onPositiveClick: async () => {
+            if (confirmation.loading || busy.value) return false
+            confirmation.loading = true
+            confirmation.negativeButtonProps = { disabled: true }
+            confirmation.closable = false
+            confirmation.maskClosable = false
+            confirmation.closeOnEsc = false
+            try {
+              return await leave(id)
+            } catch (reason) {
+              message.error(reason instanceof Error ? reason.message : String(reason))
+              return false
+            } finally {
+              confirmation.loading = false
+              confirmation.negativeButtonProps = undefined
+              confirmation.closable = true
+              confirmation.maskClosable = true
+              confirmation.closeOnEsc = true
+            }
+          },
         })
       }
 
@@ -214,10 +234,10 @@
       }
 
       async function removeMoon(id) {
-        if (busy.value) return
+        if (busy.value) return false
         busy.value = `moon-${id}`
         try {
-          await saveMoonMutation(moons.value.filter((candidate) => candidate !== id), labels.moonRemoved)
+          return await saveMoonMutation(moons.value.filter((candidate) => candidate !== id), labels.moonRemoved)
         } finally {
           busy.value = ''
         }
@@ -297,6 +317,25 @@
         ])
       }
 
+      function advancedTabProps(name) {
+        return {
+          id: `zt-tab-${name}`,
+          role: 'tab',
+          tabindex: advancedTab.value === name ? 0 : -1,
+          'aria-selected': advancedTab.value === name,
+          'aria-controls': `zt-panel-${name}`,
+          onKeydown: (event) => {
+            const tabs = [...event.currentTarget.closest('.zt-advanced-tabs').querySelectorAll('[role="tab"]')]
+            const index = tabs.indexOf(event.currentTarget)
+            const next = { ArrowLeft: tabs[(index + tabs.length - 1) % tabs.length], ArrowRight: tabs[(index + 1) % tabs.length], Home: tabs[0], End: tabs[tabs.length - 1], Enter: tabs[index], ' ': tabs[index] }[event.key]
+            if (!next) return
+            event.preventDefault()
+            next.click()
+            next.focus()
+          },
+        }
+      }
+
       return () => h('section', { class: 'zt-page' }, [
         h('div', { class: 'zt-heading' }, [
           h('div', [h('h2', labels.title), h('p', labels.description)]),
@@ -314,26 +353,30 @@
             h('small', { class: newIDError.value ? 'zt-error' : '', 'aria-hidden': newIDError.value ? undefined : 'true' }, newIDError.value || '\u00a0'),
           ]),
         ]),
-        h(NSpin, { show: loading.value && networks.value.length === 0 }, { default: () => h('div', { class: 'zt-list' }, networks.value.length ? networks.value.map(networkCard) : [h('div', { class: 'zt-empty' }, labels.empty)]) }),
-        h('section', { class: 'zt-moons' }, [
-          h('div', { class: 'zt-section-heading' }, [h('strong', labels.moonTitle), h('small', labels.moonDescription)]),
-          h('article', { class: 'zt-join' }, [
-            h('div', [h('strong', labels.moonAdd), h('small', labels.moonId)]),
-            h('div', { class: 'zt-join-control' }, [
-              h(NInput, { value: newMoonID.value, size: 'medium', maxlength: 10, placeholder: labels.moonPlaceholder, status: newMoonIDError.value ? 'error' : undefined, disabled: Boolean(busy.value), 'onUpdate:value': (value) => { newMoonID.value = value }, onKeyup: (event) => { if (event.key === 'Enter') addMoon() } }),
-              h(NButton, { type: 'primary', size: 'medium', loading: busy.value === 'moon-add', disabled: !moonIDPattern.test(normalizedNewMoonID.value) || moons.value.includes(normalizedNewMoonID.value) || Boolean(busy.value && busy.value !== 'moon-add'), onClick: addMoon }, { default: () => labels.moonAdd }),
-              h('small', { class: newMoonIDError.value ? 'zt-error' : '', 'aria-hidden': newMoonIDError.value ? undefined : 'true' }, newMoonIDError.value || '\u00a0'),
-            ]),
-          ]),
-          h(NSpin, { show: loading.value && moons.value.length === 0 }, { default: () => h('div', { class: 'zt-list' }, moons.value.length ? moons.value.map(moonCard) : [h('div', { class: 'zt-empty' }, labels.moonEmpty)]) }),
-        ]),
-        h('article', { class: 'zt-options' }, [
-          h('strong', labels.options),
-          h('div', { class: 'zt-option-grid' }, [
-            h('label', { class: 'zt-port' }, [h('span', labels.port), h(NInputNumber, { value: port.value, min: 0, max: 65535, disabled: Boolean(busy.value), 'onUpdate:value': (value) => { port.value = value ?? 0 } })]),
-            ...[[labels.managed, allowManaged], [labels.global, allowGlobal], [labels.defaultRoute, allowDefault], [labels.dns, allowDNS]].map(([label, value]) => h('label', { class: 'zt-switch', key: label }, [h('span', label), h(NSwitch, { value: value.value, disabled: Boolean(busy.value), 'onUpdate:value': (next) => { value.value = next } })])),
-          ]),
-          h('div', { class: 'zt-save' }, [h(NButton, { type: 'primary', loading: busy.value === 'save', disabled: !dirty.value || !valid.value || Boolean(busy.value && busy.value !== 'save'), onClick: saveOptions }, { default: () => labels.save })]),
+        h(NSpin, { show: busy.value === 'refresh' && networks.value.length === 0 }, { default: () => h('div', { class: 'zt-list' }, networks.value.length ? networks.value.map(networkCard) : [h('div', { class: 'zt-empty' }, labels.empty)]) }),
+        h('details', { class: 'zt-advanced' }, [
+          h('summary', labels.advanced),
+          h(NTabs, { class: 'zt-advanced-tabs', type: 'line', role: 'tablist', 'aria-label': labels.advanced, value: advancedTab.value, 'onUpdate:value': (value) => { advancedTab.value = value } }, { default: () => [
+            h(NTabPane, { name: 'moons', tab: labels.moonTitle, tabProps: advancedTabProps('moons'), id: 'zt-panel-moons', role: 'tabpanel', 'aria-labelledby': 'zt-tab-moons', displayDirective: 'show' }, { default: () => h('section', { class: 'zt-moons' }, [
+              h('p', { class: 'zt-moon-description' }, labels.moonDescription),
+              h('article', { class: 'zt-join' }, [
+                h('div', [h('strong', labels.moonAdd), h('small', labels.moonId)]),
+                h('div', { class: 'zt-join-control' }, [
+                  h(NInput, { value: newMoonID.value, size: 'medium', maxlength: 10, placeholder: labels.moonPlaceholder, status: newMoonIDError.value ? 'error' : undefined, disabled: Boolean(busy.value), 'onUpdate:value': (value) => { newMoonID.value = value }, onKeyup: (event) => { if (event.key === 'Enter') addMoon() } }),
+                  h(NButton, { type: 'primary', size: 'medium', loading: busy.value === 'moon-add', disabled: !moonIDPattern.test(normalizedNewMoonID.value) || moons.value.includes(normalizedNewMoonID.value) || Boolean(busy.value && busy.value !== 'moon-add'), onClick: addMoon }, { default: () => labels.moonAdd }),
+                  h('small', { class: newMoonIDError.value ? 'zt-error' : '', 'aria-hidden': newMoonIDError.value ? undefined : 'true' }, newMoonIDError.value || '\u00a0'),
+                ]),
+              ]),
+              h(NSpin, { show: busy.value === 'refresh' && moons.value.length === 0 }, { default: () => h('div', { class: 'zt-list' }, moons.value.length ? moons.value.map(moonCard) : [h('div', { class: 'zt-empty' }, labels.moonEmpty)]) }),
+            ]) }),
+            h(NTabPane, { name: 'options', tab: labels.options, tabProps: advancedTabProps('options'), id: 'zt-panel-options', role: 'tabpanel', 'aria-labelledby': 'zt-tab-options', displayDirective: 'show' }, { default: () => h('article', { class: 'zt-options' }, [
+              h('div', { class: 'zt-option-grid' }, [
+                h('label', { class: 'zt-port' }, [h('span', labels.port), h(NInputNumber, { value: port.value, min: 0, max: 65535, disabled: Boolean(busy.value), 'onUpdate:value': (value) => { port.value = value ?? 0 } })]),
+                ...[[labels.managed, allowManaged], [labels.global, allowGlobal], [labels.defaultRoute, allowDefault], [labels.dns, allowDNS]].map(([label, value]) => h('label', { class: 'zt-switch', key: label }, [h('span', label), h(NSwitch, { value: value.value, disabled: Boolean(busy.value), 'onUpdate:value': (next) => { value.value = next } })])),
+              ]),
+              h('div', { class: 'zt-save' }, [h(NButton, { type: 'primary', loading: busy.value === 'save', disabled: !dirty.value || !valid.value || Boolean(busy.value && busy.value !== 'save'), onClick: saveOptions }, { default: () => labels.save })]),
+            ]) }),
+          ] }),
         ]),
       ])
     },
@@ -358,9 +401,11 @@
       .zt-join-control > small { grid-column: 1 / -1; min-height: 16px; line-height: 16px; }
       .zt-error { color: var(--n-color-error, #d03050) !important; }
       .zt-list { display: grid; gap: 10px; }
+      .zt-advanced { min-width: 0; border: 1px solid var(--n-border-color, #444); border-radius: 8px; }
+      .zt-advanced > summary { padding: 14px; font-weight: 600; cursor: pointer; }
+      .zt-advanced-tabs { padding: 0 14px 14px; }
       .zt-moons { display: grid; gap: 10px; }
-      .zt-section-heading { display: grid; gap: 4px; }
-      .zt-section-heading small { color: var(--n-text-color-3, #888); }
+      .zt-moon-description { margin: 0; color: var(--n-text-color-3, #888); }
       .zt-empty { padding: 24px; border: 1px dashed var(--n-border-color, #444); border-radius: 8px; color: var(--n-text-color-3, #888); text-align: center; }
       .zt-network { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--n-border-color, #444); border-radius: 8px; }
       .zt-network-copy { display: grid; gap: 5px; min-width: 0; }
@@ -369,11 +414,12 @@
       .zt-addresses { display: flex; flex-wrap: wrap; gap: 6px; }
       .zt-node-id code, .zt-addresses code, .zt-network-copy > code { color: var(--n-text-color-1, #e5e7eb); font-family: var(--onekvm-font-mono, ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace); font-size: 13px; font-feature-settings: "tnum" 1, "zero" 1; font-variant-numeric: tabular-nums slashed-zero; font-weight: 500; line-height: 1.5; letter-spacing: .01em; }
       .zt-pending { color: var(--n-text-color-3, #888); font-size: 12px; }
-      .zt-options { display: grid; gap: 13px; padding: 14px; border: 1px solid var(--n-border-color, #444); border-radius: 8px; }
+      .zt-options { display: grid; gap: 13px; }
       .zt-option-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
       .zt-option-grid > * { width: 100%; min-width: 0; }
       .zt-port { display: grid; gap: 7px; }
-      .zt-switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .zt-switch { display: grid; gap: 7px; }
+      .zt-switch .n-switch { justify-self: start; }
       .zt-save { display: flex; justify-content: flex-end; }
       @media (max-width: 760px) { .zt-heading { display: grid; } .zt-heading-actions { justify-content: space-between; } .zt-node-id { justify-items: start; } .zt-join, .zt-network { grid-template-columns: 1fr; } .zt-network > button { justify-self: end; } }
     `],
