@@ -33,6 +33,7 @@ FILES:${PN} = "\
     ${ONEKVM_EXTENSION_ROOT}/bin/onekvm-zerotier-controller \
     ${ONEKVM_EXTENSION_ROOT}/manifest.json \
     ${ONEKVM_EXTENSION_ROOT}/web \
+    ${ONEKVM_EXTENSION_ROOT}/screen-app \
 "
 FILES:zerotier-one = "\
     ${bindir}/zerotier-one \
