@@ -44,6 +44,8 @@ RREPLACES:zerotier-one += "${PN}-runtime (<= 1.0.2-r1)"
 RCONFLICTS:zerotier-one += "${PN}-runtime (<= 1.0.2-r1)"
 INSANE_SKIP:${PN}-dbg += "buildpaths"
 
+do_configure[noexec] = "1"
+
 do_compile() {
     install -d ${B}/bin
     ${CXX} ${CXXFLAGS} -I${STAGING_INCDIR} \
