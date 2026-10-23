@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "\
     file://LICENSE;md5=1ebbd3e34237af26da5dc08a4e440464 \
     file://${ONEKVM_ZEROTIER_SOURCE}/LICENSE-MPL.txt;md5=9741c346eef56131163e13b9db1241b3 \
 "
-PR = "r7"
+PR = "r8"
 
 ZEROTIER_VERSION = "1.16.2"
 ONEKVM_COMPONENT_GIT_URI ??= "git://github.com/onekvm/onekvm-extension-zerotier.git;protocol=https;branch=main"
@@ -20,7 +20,7 @@ SRCREV_upstream = "fc5c3ec22090b5b2a0f274e863651fe9ca489bf4"
 SRCREV_FORMAT = "extension_upstream"
 S = "${UNPACKDIR}/extension"
 
-inherit onekvm-extension
+inherit onekvm-extension onekvm-screen-app
 
 DEPENDS += "json-c"
 
