@@ -194,6 +194,8 @@
         "i18n": {
           "zh": "ZeroTier"
         },
+        "icon": "icon.bin",
+        "required_features": ["icons"],
         "bundle": "screen-app", "runtime": "pocketjs-vue-vapor", "bridge_version": 2, "permissions": {"rpc": [{"methods": ["status"], "configure": true}]},
         "controls": [
           "touch",
