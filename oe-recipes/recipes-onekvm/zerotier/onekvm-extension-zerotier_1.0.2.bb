@@ -2,6 +2,9 @@ SUMMARY = "OneKVM ZeroTier service extension"
 HOMEPAGE = "https://www.zerotier.com/"
 LICENSE = "GPL-3.0-only & MPL-2.0"
 ONEKVM_ZEROTIER_SOURCE ?= "${UNPACKDIR}/zerotier-one"
+ONEKVM_EXTENSION_SOURCE ?= "${S}"
+ONEKVM_EXTENSION_SOURCE_REV ?= "${ONEKVM_COMPONENT_SRCREV}"
+do_compile[vardeps] += "ONEKVM_EXTENSION_SOURCE_REV"
 LIC_FILES_CHKSUM = "\
     file://LICENSE;md5=1ebbd3e34237af26da5dc08a4e440464 \
     file://${ONEKVM_ZEROTIER_SOURCE}/LICENSE-MPL.txt;md5=9741c346eef56131163e13b9db1241b3 \
@@ -26,7 +29,7 @@ DEPENDS += "json-c"
 
 ONEKVM_EXTENSION_ID = "zerotier"
 ONEKVM_EXTENSION_API_VERSION = "2"
-ONEKVM_EXTENSION_MANIFEST_TEMPLATE = "${S}/manifest.json.in"
+ONEKVM_EXTENSION_MANIFEST_TEMPLATE = "${ONEKVM_EXTENSION_SOURCE}/manifest.json.in"
 
 PACKAGES = "${PN}-dbg zerotier-one ${PN}"
 FILES:${PN} = "\
@@ -49,7 +52,7 @@ do_configure[noexec] = "1"
 do_compile() {
     install -d ${B}/bin
     ${CXX} ${CXXFLAGS} -I${STAGING_INCDIR} \
-        ${S}/src/main.cpp ${STAGING_LIBDIR}/libjson-c.a -lm ${LDFLAGS} \
+        ${ONEKVM_EXTENSION_SOURCE}/src/main.cpp ${STAGING_LIBDIR}/libjson-c.a -lm ${LDFLAGS} \
         -o ${B}/bin/onekvm-zerotier-controller
 
     # Network membership is managed by the controller; desktop OIDC is unused.
@@ -61,7 +64,7 @@ do_compile() {
 do_compile[dirs] = "${B}"
 
 do_install() {
-    oe_runmake -C ${S} install \
+    oe_runmake -C ${ONEKVM_EXTENSION_SOURCE} install \
         CONTROLLER_BINARY=${B}/bin/onekvm-zerotier-controller \
         RUNTIME_BINARY=${ONEKVM_ZEROTIER_SOURCE}/zerotier-one \
         DESTDIR=${D} PREFIX=${ONEKVM_EXTENSION_ROOT} BINDIR=${bindir} \
