@@ -1,0 +1,44 @@
+name: Check ZeroTier release
+
+on:
+  schedule:
+    - cron: "51 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: zerotier-version-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the extension
+        uses: actions/checkout@v4
+
+      - name: Check and update the pinned client release
+        id: update
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/check-zerotier-version.py --update
+
+      - name: Open a pull request for a new release
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ github.token }}
+          base: main
+          branch: automation/zerotier-version
+          delete-branch: true
+          commit-message: "build(zerotier): update client to ${{ steps.update.outputs.version }}"
+          title: "build(zerotier): update client to ${{ steps.update.outputs.version }}"
+          body: |
+            This pull request was opened by the daily ZeroTier release check.
+
+            It updates the pinned ZeroTier One client version and upstream source revision. The OneKVM extension package version remains unchanged.
+
+            Please review the upstream build and package changes before merging.
